@@ -491,111 +491,122 @@ def buildgeom():
 
 
 def forcecalc(power_, u_, v_, w_, p_, q_, r_, aileron_, elevator_, rudder_):
-
+    
+    'calc thrust force'
     thrust = thrustcalc(power_, u_)
-
+    
+    'calc local velocity components for each strip on the wing (u,v,w)'
     u_w_lw = u_-wing*r_
     u_w_rw = u_+wing*r_
     v_w = v_*np.ones(np.size(wing))
     w_w_lw = w_-p_*wing-q_*(x_cg-x_ac_w)
     w_w_rw = w_+p_*wing-q_*(x_cg-x_ac_w)
 
+    'calc local velocity components for each strip on the horizontal tail (u,v,w)'
     u_ht_lht = u_-htail*r_
     u_ht_rht = u_+htail*r_
     v_ht = v_*np.ones(np.size(wing))
     w_ht_lht = w_-p_*htail-q_*(x_cg-x_ac_ht)
     w_ht_rht = w_+p_*htail-q_*(x_cg-x_ac_ht)
-
+    
+    'calc local velocity components for each strip on the vertical tail (u,v,w)'
     u_vt = u_-vtail*q_
     v_vt = v_+p_*vtail+r_*(x_cg-x_ac_vt)
     w_vt = w_*np.ones(np.size(vtail))
-
+    
+    'calc local local angles of attack for each strip on the wings, ht, vt'
     alpha_lw = np.arctan2(w_w_lw, u_w_lw)
     alpha_rw = np.arctan2(w_w_rw, u_w_rw)
     alpha_lht = np.arctan2(w_ht_lht, u_ht_lht)
     alpha_rht = np.arctan2(w_ht_rht, u_ht_rht)
     alpha_vt = np.arcsin(v_vt/np.sqrt(u_vt**2+v_vt**2+w_vt**2))
-
+    
+    'calc local local lift coefficients for each strip on the wings, ht, vt'
     CL_lw = CL(wing, dCL_da_w, alpha_lw, CL0_w, -aileron_, dCL_de_w, Y_w, y_w)
     CL_rw = CL(wing, dCL_da_w, alpha_rw, CL0_w, aileron_, dCL_de_w, Y_w, y_w)
     CL_lht = CL(htail, dCL_da_ht, alpha_lht, CL0_ht, elevator_, dCL_de_ht, Y_ht, y_ht)
     CL_rht = CL(htail, dCL_da_ht, alpha_rht, CL0_ht, elevator_, dCL_de_ht, Y_ht, y_ht)
     CL_vt = CL(vtail, dCL_da_vt, alpha_vt, CL0_vt, rudder_, dCL_de_vt, Y_vt, y_vt)
-
+    
+    'calc local local moment coefficients for each strip on the wings, ht, vt'
     CM_lw = CM(wing, dCM_da_w, alpha_lw, CM0_w, -aileron_, dCM_de_w, Y_w, y_w)
     CM_rw = CM(wing, dCM_da_w, alpha_lw, CM0_w, aileron_, dCM_de_w, Y_w, y_w)
     CM_lht = CM(htail, dCM_da_ht, alpha_lw, CM0_ht, -aileron_, dCM_de_w, Y_w, y_w)
     CM_rht = CM(htail, dCM_da_ht, alpha_lw, CM0_ht, -aileron_, dCM_de_w, Y_w, y_w)
     CM_vt = CM(vtail, dCM_da_vt, alpha_lw, CM0_vt, -aileron_, dCM_de_w, Y_w, y_w)
-
-    AR_w = wspan**2/Sref_w
-    AR_ht = htspan**2/Sref_ht
-    AR_vt = vtspan**2/Sref_vt
-
+    
+    'calc constant values'
     K1 = AR_w*e_w*math.pi
     K2 = AR_ht*e_ht*math.pi
     K3 = AR_vt*e_vt*math.pi
-
+    
+    'calc drag coefficients for wings, ht, vt'
     CD_lw = CD0_w+CL_lw**2/K1
     CD_rw = CD0_w+CL_rw**2/K1
     CD_lht = CD0_ht+CL_lht**2/K2
     CD_rht = CD0_ht+CL_rht**2/K2
     CD_vt = CD0_vt+CL_vt**2/K3
-
+    
+    'calc local velocities'
     Vsq_lw = u_w_lw**2+v_w**2+w_w_lw**2
     Vsq_rw = u_w_rw**2+v_w**2+w_w_rw**2
     Vsq_lht = u_ht_lht**2+v_ht**2+w_ht_lht**2
     Vsq_rht = u_ht_rht**2+v_ht**2+w_ht_rht**2
     Vsq_vt = u_vt**2+v_vt**2+w_vt**2
-
+    
+    'constants, elemental areas for wings, ht, vt'
     K = 0.5*rho
     A_w = w_el*chord_w
     A_ht = ht_el*chord_ht
     A_vt = vt_el*chord_vt
-
+    
+    'calc lift force in wings, ht, vt'
     LIFT_LW = CL_lw*K*Vsq_lw*A_w
     LIFT_RW = CL_rw*K*Vsq_rw*A_w
     LIFT_LHT = CL_lht*K*Vsq_lht*A_ht
     LIFT_RHT = CL_rht*K*Vsq_rht*A_ht
     LIFT_VT = CL_vt*K*Vsq_vt*A_vt
-
+    
+    'calc drag force in wings, ht, vt'
     DRAG_LW = CD_lw*K*Vsq_lw*A_w
     DRAG_RW = CD_rw*K*Vsq_rw*A_w
     DRAG_LHT = CD_lht*K*Vsq_lht*A_ht
     DRAG_RHT = CD_rht*K*Vsq_rht*A_ht
     DRAG_VT = CD_vt*K*Vsq_vt*A_vt
-
+    
+    'calc pitching moments in wings, ht, vt'
     PITCH_LW = CM_lw*K*Vsq_lw*A_w*chord_w
     PITCH_RW = CM_rw*K*Vsq_rw*A_w*chord_w
     PITCH_LHT = CM_lht*K*Vsq_lht*A_ht*chord_ht
     PITCH_RHT = CM_rht*K*Vsq_rht*A_ht*chord_ht
     PITCH_VT = CM_vt*K*Vsq_vt*A_vt*chord_vt
-
+    
+    'total pitching moment due to lift'
     TOTAL_PITCH = PITCH_LW+PITCH_RW+PITCH_LHT+PITCH_RHT+PITCH_VT
-
+    
+    'calc force in body X direction in wings, ht, vt'
     LW_X = LIFT_LW*np.sin(alpha_lw)-DRAG_LW*np.cos(alpha_lw)
     RW_X = LIFT_RW*np.sin(alpha_rw)-DRAG_RW*np.cos(alpha_rw)
     LHT_X = LIFT_LHT*np.sin(alpha_lht)-DRAG_LHT*np.cos(alpha_lht)
     RHT_X = LIFT_RHT*np.sin(alpha_rht)-DRAG_RHT*np.cos(alpha_rht)
     VT_X = LIFT_VT*np.sin(alpha_vt)-DRAG_VT*np.cos(alpha_vt)
-
+    
+    'calc force in body Y direction in wings, ht, vt'
     VT_Y = LIFT_VT*np.cos(alpha_vt)+DRAG_VT*np.sin(alpha_vt)
-
+    
+    'calc force in body Z direction in wings, ht, vt'
     LW_Z = LIFT_LW*np.cos(alpha_lw)+DRAG_LW*np.sin(alpha_lw)
     RW_Z = LIFT_RW*np.cos(alpha_rw)+DRAG_RW*np.sin(alpha_rw)
     LHT_Z = LIFT_LHT*np.cos(alpha_lht)+DRAG_LHT*np.sin(alpha_lht)
     RHT_Z = LIFT_RHT*np.cos(alpha_rht)+DRAG_RHT*np.sin(alpha_rht)
 
 
-    'Forces'
+    'Total body forces'
     XF = float(thrust)-np.sum(LW_X)-np.sum(RW_X)-np.sum(LHT_X)-np.sum(RHT_X)-np.sum(VT_X)+0.32*0.5*rho*(u_**2+v_**2)*math.pi*fuserad*fuserad
     YF = np.sum(VT_Y)
     ZF = np.sum(LW_Z)+np.sum(RW_Z)+np.sum(LHT_Z)+np.sum(RHT_Z)
 
-    test = np.sum((RW_X-LW_X)*wing)
-    test2 = np.sum((RHT_X-LHT_X)*htail)
-
-    'Moments'
+    'Moments about body X, Y, Z axes'
     LM = np.sum(wing*LW_Z)-np.sum(wing*RW_Z)+np.sum(htail*LHT_Z)-np.sum(htail*RHT_Z)+np.sum(vtail*VT_Y)
     MM = np.sum(LW_Z*(x_cg-x_ac_w))+np.sum(RW_Z*(x_cg-x_ac_w))+np.sum(LHT_Z*(x_cg-x_ac_ht))+np.sum(RHT_Z*(x_cg-x_ac_ht))+np.sum(vtail*VT_X)+np.sum(TOTAL_PITCH)
     NM = np.sum((RW_X-LW_X)*wing)+np.sum((RHT_X-LHT_X)*htail)
@@ -645,43 +656,44 @@ def nlti(u_, v_, w_, p_, q_, r_, x_, y_, z_, phi_, theta_, psi_, A_):
     global pdot
     global qdot
     global rdot
-
+    
+    'linear accelerations in the body frame'
     du_dt = float(A_[0]/m-g*math.sin(theta_)-q_*w_+r_*v_)
     dv_dt = float(A_[1]/m+g*math.cos(theta_)*math.sin(phi_)-r_*u_+p_*w_)
     dw_dt = float(A_[2]/m+g*math.cos(theta_)*math.cos(phi_)-p_*v_+q_*u_)
-
+    
+    'angular accelerations in the body frame'
     dp_dt = float(A_[3]/Ixx-(Izz-Iyy)/Ixx*q_*r_)
     dq_dt = float(A_[4]/Iyy-(Ixx - Izz)/Iyy*r_*p_)
     dr_dt = float(A_[5]/Izz-(Iyy - Ixx)/Izz*p_*q_)
-
+    
+    'half time step representation of linear velocities'
     u_ += 0.5*(udot+du_dt)*timestep
     v_ += 0.5*(vdot+dv_dt)*timestep
     w_ += 0.5*(wdot+dw_dt)*timestep
-
+    
+    'half time step representation of angular velocities'
     p_ += 0.5*(pdot+dp_dt)*timestep
     q_ += 0.5*(qdot+dq_dt)*timestep
     r_ += 0.5*(rdot+dr_dt)*timestep
-
+    
+    'using cosine matrices to convert velocities and accelerations to inertial frame (is there a better way to handle accelerations?)'
     I_ = lindcm([phi_, theta_, psi_], [du_dt, dv_dt, dw_dt])
     X_ = lindcm([phi_, theta_, psi_], [u_, v_, w_])
     J_ = angdcm([phi_, theta_, psi_], [dp_dt, dq_dt, dr_dt])
     W_ = angdcm([phi_, theta_, psi_], [p_, q_, r_])
-
-    dx_dt = X_[0]
-    dy_dt = X_[1]
-    dz_dt = X_[2]
-    dphi_dt = W_[0]
-    dtheta_dt = W_[1]
-    dpsi_dt = W_[2]
-
-    x_ += dx_dt*timestep+0.5*I_[0]*timestep*timestep
-    y_ += dy_dt*timestep+0.5*I_[1]*timestep*timestep
-    z_ += dz_dt*timestep+0.5*I_[2]*timestep*timestep
-
-    phi_ += dphi_dt*timestep+0.5*J_[0]*timestep*timestep
-    theta_ += dtheta_dt*timestep+0.5*J_[1]*timestep*timestep
-    psi_ += dpsi_dt*timestep+0.5*J_[2]*timestep*timestep
-
+    
+    'linear displacements in the inertial frame'
+    x_ += X_[0]*timestep+0.5*I_[0]*timestep*timestep
+    y_ += X_[1]*timestep+0.5*I_[1]*timestep*timestep
+    z_ += X_[2]*timestep+0.5*I_[2]*timestep*timestep
+    
+    'angular displacements in the inertial frame'
+    phi_ += W_[0]*timestep+0.5*J_[0]*timestep*timestep
+    theta_ += W_[1]*timestep+0.5*J_[1]*timestep*timestep
+    psi_ += W_[2]*timestep+0.5*J_[2]*timestep*timestep
+    
+    'store velocities so that in the next step, the half time step velocities can be calculated'
     udot = du_dt
     vdot = dv_dt
     wdot = dw_dt
@@ -725,6 +737,7 @@ def angdcm(A, B):
     return W
 
 def coefs(u_, v_, w_, A_):
+    'calculate body force and moment coefficients'
     XF = A_[0]
     YF = A_[1]
     ZF = A_[2]
