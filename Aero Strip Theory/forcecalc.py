@@ -602,7 +602,7 @@ def forcecalc(power_, u_, v_, w_, p_, q_, r_, aileron_, elevator_, rudder_):
 
 
     'Total body forces'
-    XF = float(thrust)-np.sum(LW_X)-np.sum(RW_X)-np.sum(LHT_X)-np.sum(RHT_X)-np.sum(VT_X)+0.32*0.5*rho*(u_**2+v_**2)*math.pi*fuserad*fuserad
+    XF = float(thrust)-np.sum(LW_X)-np.sum(RW_X)-np.sum(LHT_X)-np.sum(RHT_X)-np.sum(VT_X)
     YF = np.sum(VT_Y)
     ZF = np.sum(LW_Z)+np.sum(RW_Z)+np.sum(LHT_Z)+np.sum(RHT_Z)
 
