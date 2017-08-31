@@ -22,7 +22,6 @@ global steps
 global rho
 global g
 
-
 '##################--AIRCRAFT--##################'
 'aircraft parameters'
 global m
@@ -47,7 +46,6 @@ global dCDb_dA
 'stall points'
 global alphamin
 global alphamax
-
 
 '##################--WING--##################'
 'wing geometry'
@@ -81,7 +79,6 @@ global y_w
 
 'oswald efficiency factor wing'
 global e_w
-
 
 '##################--HORIZONTAL TAIL--##################'
 'horizontal tail geometry'
@@ -158,11 +155,9 @@ def setsolverparams(timestep_, udot_, vdot_, wdot_, pdot_, qdot_, rdot_, steps_,
     global pdot
     global qdot
     global rdot
-
     global steps
     global rho
     global g
-
     timestep = timestep_
     udot = udot_
     vdot = vdot_
@@ -170,7 +165,6 @@ def setsolverparams(timestep_, udot_, vdot_, wdot_, pdot_, qdot_, rdot_, steps_,
     pdot = pdot_
     qdot = qdot_
     rdot = rdot_
-
     'strip theory solver parameters'
     steps = steps_
     rho = rho_
@@ -182,7 +176,6 @@ def setuvals(u2x, u2y, u2z, ufunc):
     global U2Yvals
     global U2Zvals
     global U2func
-
     U2Xvals = u2x
     U2Yvals = u2y
     U2Zvals = u2z
@@ -194,15 +187,12 @@ def setacparams(m_, Ixx_, Iyy_, Izz_, proprad_, fuserad_, x_cg_, CD0_b_, dCDb_dB
     global Ixx
     global Iyy
     global Izz
-
     global proprad
     global fuserad
     global x_cg
-
     global CD0_b
     global dCDb_dB
     global dCDb_dA
-
     global alphamin
     global alphamax
 
@@ -233,15 +223,12 @@ def setwingparams(wspan_, winc_, rc_w_, tc_w_, qtc_sweep_w_, wing_root_le_x_, dC
     global tc_w
     global qtc_sweep_w
     global wing_root_le_x
-
     global dCL_da_w
     global dCL_de_w
     global CL0_w
     global CD0_w
-
     global Y_w
     global y_w
-
     global e_w
 
     wspan = wspan_
@@ -272,15 +259,12 @@ def sethtailparams(htspan_, htinc_, rc_ht_, tc_ht_, qtc_sweep_ht_, htail_root_le
     global tc_ht
     global qtc_sweep_ht
     global htail_root_le_x
-
     global dCL_da_ht
     global dCL_de_ht
     global CL0_ht
     global CD0_ht
-
     global Y_ht
     global y_ht
-
     global e_ht
 
     htspan = htspan_
@@ -290,17 +274,17 @@ def sethtailparams(htspan_, htinc_, rc_ht_, tc_ht_, qtc_sweep_ht_, htail_root_le
     qtc_sweep_ht = qtc_sweep_ht_*math.pi/180
     htail_root_le_x = htail_root_le_x_
 
-    'wing lift curve slope values'
+    'horizontal tailplane lift-curve slope values'
     dCL_da_ht = dCL_da_ht_
     dCL_de_ht = dCL_de_ht_
     CL0_ht = CL0_ht_
     CD0_ht = CD0_ht_
 
-    'wing control surface y placement (start and end)'
+    'htail control surface y placement (start and end)'
     Y_ht = Y_ht_
     y_ht = y_ht_
 
-    'oswald efficiency factor wing'
+    'oswald efficiency factor htail'
     e_ht = e_ht_
 
 'set vertical tail geometry'
@@ -311,15 +295,12 @@ def setvtailparams(vtspan_, vtinc_, rc_vt_, tc_vt_, qtc_sweep_vt_, vtail_root_le
     global tc_vt
     global qtc_sweep_vt
     global vtail_root_le_x
-
     global dCL_da_vt
     global dCL_de_vt
     global CL0_vt
     global CD0_vt
-
     global Y_vt
     global y_vt
-
     global e_vt
 
     vtspan = vtspan_
@@ -352,7 +333,7 @@ def buildwing():
     global AR_w
     global w_el
     global Sref_w
-
+    global cbar_w
     b_w = wspan/2
     cbar_w = (rc_w+tc_w)/2
     Sref_w = cbar_w*wspan
@@ -363,6 +344,7 @@ def buildwing():
     le_sweep_w = math.atan2((b_w*math.tan(qtc_sweep_w)+0.25*(rc_w-tc_w)), b_w)
     x_ac_w = wing_root_le_x+0.25*chord_w+np.multiply(math.tan(le_sweep_w), wing)
 
+'build horizontal tail geometry'
 def buildhoztail():
     global htail
     global qtc_sweep_ht
@@ -372,7 +354,7 @@ def buildhoztail():
     global AR_ht
     global ht_el
     global Sref_ht
-
+    global cbar_ht
     b_ht = htspan / 2
     cbar_ht = (rc_ht + tc_ht) / 2
     Sref_ht = cbar_ht * htspan
@@ -383,6 +365,7 @@ def buildhoztail():
     le_sweep_ht = math.atan2((b_ht * math.tan(qtc_sweep_ht) + 0.25 * (rc_ht - tc_ht)), b_ht)
     x_ac_ht = htail_root_le_x + 0.25 * chord_ht + np.multiply(math.tan(le_sweep_ht), htail)
 
+'build vertical tail geometry'
 def buildvertail():
     global vtail
     global qtc_sweep_vt
@@ -392,7 +375,7 @@ def buildvertail():
     global AR_vt
     global vt_el
     global Sref_vt
-
+    global cbar_vt
     cbar_vt = (rc_vt + tc_vt) / 2
     Sref_vt = cbar_vt * vtspan
     AR_vt = vtspan * vtspan / Sref_vt
@@ -402,123 +385,56 @@ def buildvertail():
     le_sweep_vt = math.atan2((vtspan * math.tan(qtc_sweep_vt) + 0.25 * (rc_vt - tc_vt)), vtspan)
     x_ac_vt = vtail_root_le_x + 0.25 * chord_vt + np.multiply(math.tan(le_sweep_vt), vtail)
 
+'build fuselage and prop geometry'
 def buildfuseandprop():
     global A_b_ref
     global diskA
-
     A_b_ref = math.pi * fuserad * fuserad
     diskA = math.pi * proprad * proprad
 
 'build aircraft geometry to be used for forcecalc'
 def buildgeom():
-    global wing
-    global htail
-    global vtail
-    global qtc_sweep_w
-    global qtc_sweep_ht
-    global qtc_sweep_vt
-    global le_sweep_w
-    global le_sweep_ht
-    global le_sweep_vt
-    global chord_w
-    global chord_ht
-    global chord_vt
-    global x_ac_w
-    global x_ac_ht
-    global x_ac_vt
-    global AR_w
-    global AR_ht
-    global AR_vt
-    global w_el
-    global ht_el
-    global vt_el
-    global A_b_ref
-    global diskA
-    global Sref_w
-    global Sref_ht
-    global Sref_vt
-    global cbar_w
-    global cbar_ht
-    global cbar_vt
-    global dCL_da_w
-    global dCL_da_ht
-    global dCL_da_vt
+    buildwing()
+    buildhoztail()
+    buildvertail()
+    buildfuseandprop()
 
-    lambda_w = tc_w/rc_w
-    lambda_ht = tc_ht/rc_ht
-    lambda_vt = tc_vt / rc_vt
-
-    b_w = wspan/2
-    b_ht = htspan/2
-
-    cbar_w = rc_w*(2.0/3.0)*(1+lambda_w+lambda_w**2)/(1+lambda_w)
-    Sref_w = ((rc_w+tc_w)/2)*wspan
-    AR_w = wspan*wspan/Sref_w
-    w_el = b_w/steps
-
-    cbar_ht = rc_ht*(2.0/3.0)*(1+lambda_ht+lambda_ht**2)/(1+lambda_ht)
-    Sref_ht = ((rc_ht+tc_ht)/2)*htspan
-    AR_ht = htspan*htspan/Sref_ht
-    ht_el = b_ht/steps
-
-    cbar_vt = rc_vt*(2.0/3.0)*(1+lambda_vt+lambda_vt**2)/(1+lambda_vt)
-    Sref_vt = ((rc_vt+tc_vt)/2)*vtspan
-    AR_vt = vtspan*vtspan/Sref_vt
-    vt_el = vtspan/steps
-
-    wing = np.linspace(w_el/2, (wspan-w_el)/2, steps)
-    htail = np.linspace(ht_el/2, (htspan-ht_el)/2, steps)
-    vtail = np.linspace(vt_el/2, (vtspan-vt_el)/2, steps)
-
-    chord_w = chord(wing, wspan, Sref_w, rc_w, tc_w)
-    chord_ht = chord(htail, htspan, Sref_ht, rc_ht, tc_ht)
-    chord_vt = chord(vtail, vtspan, Sref_vt, rc_vt, tc_vt)
-
-    le_sweep_w = math.atan2((b_w*math.tan(qtc_sweep_w)+0.25*(rc_w-tc_w)), b_w)
-    le_sweep_ht = math.atan2((b_ht*math.tan(qtc_sweep_ht)+0.25*(rc_ht-tc_ht)), b_ht)
-    le_sweep_vt = math.atan2((vtspan*math.tan(qtc_sweep_vt)+0.25*(rc_vt-tc_vt)), vtspan)
-
-    x_ac_w = wing_root_le_x+0.25*chord_w+np.multiply(math.tan(le_sweep_w), wing)
-    x_ac_ht = htail_root_le_x+0.25*chord_ht+np.multiply(math.tan(le_sweep_ht), htail)
-    x_ac_vt = vtail_root_le_x+0.25*chord_vt+np.multiply(math.tan(le_sweep_vt), vtail)
-
-    A_b_ref = math.pi*fuserad*fuserad
-    diskA = math.pi*proprad*proprad
-
-    dCL_da_w = dCL_da_w*AR_w/(2+AR_w)
-    dCL_da_ht = dCL_da_ht*AR_ht/(2 + AR_ht)
-    dCL_da_vt = dCL_da_vt*AR_vt/(2 + AR_vt)
-
-
+'calculate body forces acting on the aircraft using strip theory'
 def forcecalc(power_, u_, v_, w_, p_, q_, r_, aileron_, elevator_, rudder_):
     
     'calc thrust force'
     thrust = thrustcalc(power_, u_)
     
+    'creating left and right wings to keep axes consistent'
+    leftwing = -np.flip(wing, 0)
+    rightwing = wing
+
     'calc local velocity components for each strip on the wing (u,v,w)'
-    u_w_lw = u_-wing*r_
-    u_w_rw = u_+wing*r_
+    u_w_lw = u_+leftwing*r_
+    u_w_rw = u_+rightwing*r_
     v_w = v_*np.ones(np.size(wing))
-    w_w_lw = w_-p_*wing-q_*(x_cg-x_ac_w)
-    w_w_rw = w_+p_*wing-q_*(x_cg-x_ac_w)
+    w_w_lw = w_+p_*leftwing-q_*(x_cg-x_ac_w)
+    w_w_rw = w_+p_*rightwing-q_*(x_cg-x_ac_w)
 
     'calc local velocity components for each strip on the horizontal tail (u,v,w)'
-    u_ht_lht = u_-htail*r_
-    u_ht_rht = u_+htail*r_
-    v_ht = v_*np.ones(np.size(wing))
-    w_ht_lht = w_-p_*htail-q_*(x_cg-x_ac_ht)
-    w_ht_rht = w_+p_*htail-q_*(x_cg-x_ac_ht)
+    lefthtail = -np.flip(htail, 0)
+    righthtail = htail
+    u_ht_lht = u_+lefthtail*r_
+    u_ht_rht = u_+righthtail*r_
+    v_ht = v_-r_*(x_cg-x_ac_ht)
+    w_ht_lht = w_+p_*lefthtail-q_*(x_cg-x_ac_ht)
+    w_ht_rht = w_+p_*righthtail-q_*(x_cg-x_ac_ht)
     
     'calc local velocity components for each strip on the vertical tail (u,v,w)'
     u_vt = u_-vtail*q_
-    v_vt = v_+p_*vtail+r_*(x_cg-x_ac_vt)
-    w_vt = w_*np.ones(np.size(vtail))
+    v_vt = v_+p_*vtail-r_*(x_cg-x_ac_vt)
+    w_vt = w_-q_*(x_cg-x_ac_vt)
     
-    'calc local local angles of attack for each strip on the wings, ht, vt'
-    alpha_lw = np.arctan2(w_w_lw, u_w_lw)
-    alpha_rw = np.arctan2(w_w_rw, u_w_rw)
-    alpha_lht = np.arctan2(w_ht_lht, u_ht_lht)
-    alpha_rht = np.arctan2(w_ht_rht, u_ht_rht)
+    'calc local local angles of attack for each strip on the wings, ht, vt, including wing incidence'
+    alpha_lw = np.arctan2(w_w_lw, u_w_lw)+winc*np.pi/180
+    alpha_rw = np.arctan2(w_w_rw, u_w_rw)+winc*np.pi/180
+    alpha_lht = np.arctan2(w_ht_lht, u_ht_lht)+htinc*np.pi/180
+    alpha_rht = np.arctan2(w_ht_rht, u_ht_rht)+htinc*np.pi/180
     alpha_vt = np.arcsin(v_vt/np.sqrt(u_vt**2+v_vt**2+w_vt**2))
     
     'calc local local lift coefficients for each strip on the wings, ht, vt'
@@ -531,9 +447,9 @@ def forcecalc(power_, u_, v_, w_, p_, q_, r_, aileron_, elevator_, rudder_):
     'calc local local moment coefficients for each strip on the wings, ht, vt'
     CM_lw = CM(wing, dCM_da_w, alpha_lw, CM0_w, -aileron_, dCM_de_w, Y_w, y_w)
     CM_rw = CM(wing, dCM_da_w, alpha_lw, CM0_w, aileron_, dCM_de_w, Y_w, y_w)
-    CM_lht = CM(htail, dCM_da_ht, alpha_lw, CM0_ht, -aileron_, dCM_de_w, Y_w, y_w)
-    CM_rht = CM(htail, dCM_da_ht, alpha_lw, CM0_ht, -aileron_, dCM_de_w, Y_w, y_w)
-    CM_vt = CM(vtail, dCM_da_vt, alpha_lw, CM0_vt, -aileron_, dCM_de_w, Y_w, y_w)
+    CM_lht = CM(htail, dCM_da_ht, alpha_lw, CM0_ht, elevator_, dCM_de_w, Y_w, y_w)
+    CM_rht = CM(htail, dCM_da_ht, alpha_lw, CM0_ht, elevator_, dCM_de_w, Y_w, y_w)
+    CM_vt = CM(vtail, dCM_da_vt, alpha_lw, CM0_vt, rudder_, dCM_de_w, Y_w, y_w)
     
     'calc constant values'
     K1 = AR_w*e_w*math.pi
@@ -561,27 +477,27 @@ def forcecalc(power_, u_, v_, w_, p_, q_, r_, aileron_, elevator_, rudder_):
     A_vt = vt_el*chord_vt
     
     'calc lift force in wings, ht, vt'
-    LIFT_LW = CL_lw*K*Vsq_lw*A_w
+    LIFT_LW = CL_lw*K*Vsq_lw*np.flip(A_w, 0)
     LIFT_RW = CL_rw*K*Vsq_rw*A_w
-    LIFT_LHT = CL_lht*K*Vsq_lht*A_ht
+    LIFT_LHT = CL_lht*K*Vsq_lht*np.flip(A_ht, 0)
     LIFT_RHT = CL_rht*K*Vsq_rht*A_ht
     LIFT_VT = CL_vt*K*Vsq_vt*A_vt
     
     'calc drag force in wings, ht, vt'
-    DRAG_LW = CD_lw*K*Vsq_lw*A_w
+    DRAG_LW = CD_lw*K*Vsq_lw*np.flip(A_w, 0)
     DRAG_RW = CD_rw*K*Vsq_rw*A_w
-    DRAG_LHT = CD_lht*K*Vsq_lht*A_ht
+    DRAG_LHT = CD_lht*K*Vsq_lht*np.flip(A_ht, 0)
     DRAG_RHT = CD_rht*K*Vsq_rht*A_ht
     DRAG_VT = CD_vt*K*Vsq_vt*A_vt
     
     'calc pitching moments in wings, ht, vt'
-    PITCH_LW = CM_lw*K*Vsq_lw*A_w*chord_w
+    PITCH_LW = CM_lw*K*Vsq_lw*np.flip(A_ht, 0)*np.flip(chord_w, 0)
     PITCH_RW = CM_rw*K*Vsq_rw*A_w*chord_w
-    PITCH_LHT = CM_lht*K*Vsq_lht*A_ht*chord_ht
+    PITCH_LHT = CM_lht*K*Vsq_lht*np.flip(A_ht, 0)*np.flip(chord_ht, 0)
     PITCH_RHT = CM_rht*K*Vsq_rht*A_ht*chord_ht
     PITCH_VT = CM_vt*K*Vsq_vt*A_vt*chord_vt
     
-    'total pitching moment due to lift'
+    'total pitching moment due to lift and sweep'
     TOTAL_PITCH = PITCH_LW+PITCH_RW+PITCH_LHT+PITCH_RHT+PITCH_VT
     
     'calc force in body X direction in wings, ht, vt'
@@ -600,20 +516,19 @@ def forcecalc(power_, u_, v_, w_, p_, q_, r_, aileron_, elevator_, rudder_):
     LHT_Z = LIFT_LHT*np.cos(alpha_lht)+DRAG_LHT*np.sin(alpha_lht)
     RHT_Z = LIFT_RHT*np.cos(alpha_rht)+DRAG_RHT*np.sin(alpha_rht)
 
-
     'Total body forces'
-    XF = float(thrust)-np.sum(LW_X)-np.sum(RW_X)-np.sum(LHT_X)-np.sum(RHT_X)-np.sum(VT_X)
+    XF = float(thrust)+np.sum(LW_X)+np.sum(RW_X)+np.sum(LHT_X)+np.sum(RHT_X)+np.sum(VT_X)
     YF = np.sum(VT_Y)
     ZF = np.sum(LW_Z)+np.sum(RW_Z)+np.sum(LHT_Z)+np.sum(RHT_Z)
 
     'Moments about body X, Y, Z axes'
-    LM = np.sum(wing*LW_Z)-np.sum(wing*RW_Z)+np.sum(htail*LHT_Z)-np.sum(htail*RHT_Z)+np.sum(vtail*VT_Y)
-    MM = np.sum(LW_Z*(x_cg-x_ac_w))+np.sum(RW_Z*(x_cg-x_ac_w))+np.sum(LHT_Z*(x_cg-x_ac_ht))+np.sum(RHT_Z*(x_cg-x_ac_ht))+np.sum(vtail*VT_X)+np.sum(TOTAL_PITCH)
-    NM = np.sum((RW_X-LW_X)*wing)+np.sum((RHT_X-LHT_X)*htail)
-
+    LM = np.sum(-leftwing*LW_Z-rightwing*RW_Z)+np.sum(-lefthtail*LHT_Z-righthtail*RHT_Z)+np.sum(vtail*VT_Y)
+    MM = np.sum((LW_Z+RW_Z)*(x_cg-x_ac_w))+np.sum((LHT_Z+RHT_Z)*(x_cg-x_ac_ht))+np.sum(vtail*VT_X)+np.sum(TOTAL_PITCH)
+    NM = np.sum(-rightwing*RW_X-leftwing*LW_X)+np.sum(-righthtail*RHT_X-lefthtail*LHT_X)
+    print(XF, YF, ZF, LM, MM, NM)
     return [XF, YF, ZF, LM, MM, NM]
 
-
+'uses an interpolation function to calculate the exhaust velocity and thrust of the prop using momentum theory'
 def thrustcalc(power, u_):
     if power>0:
         u2 = U2func(power, u_)
@@ -622,7 +537,7 @@ def thrustcalc(power, u_):
         force = 0
     return force
 
-
+'calculates the chord of the wing at each point in its station'
 def chord(wing, span, area, rc, tc):
     k = tc/rc
     A = 2*area/((1+k)*span)
@@ -630,25 +545,26 @@ def chord(wing, span, area, rc, tc):
     res = A*(1-B*wing)
     return res
 
-
+'calculates the lift coefficient at each station along the wing'
 def CL(wing, dCL_da, alpha, CL0, displacement, dCL_de, pos1, pos2):
     aileronCL = heaviside(wing, pos1, pos2)
     stalled = (alpha >= alphamin) & (alpha <= alphamax)
     res = stalled.astype(int)*(CL0+dCL_da*alpha+aileronCL*dCL_de*displacement)
     return res
-
+'calculates the moment coefficient at each station along the wing'
 def CM(wing, dCM_da, alpha, CM0, displacement, dCM_de, pos1, pos2):
     aileronCL = heaviside(wing, pos1, pos2)
     stalled = (alpha >= alphamin) & (alpha <= alphamax)
     res = stalled.astype(int)*(CM0+dCM_da*alpha+aileronCL*dCM_de*displacement)
     return res
 
-
+'heaviside operator, returns a vector of 1s and 0s to make array operations easier'
 def heaviside(wing, pos1, pos2):
     res = (wing >= pos1) & (wing <= pos2)
     return res.astype(int)
 
-
+'leap frog integrator to calculate accelerations velocities in the body frame, and calc displacement'
+'in the inertial frame'
 def nlti(u_, v_, w_, p_, q_, r_, x_, y_, z_, phi_, theta_, psi_, A_):
     global udot
     global vdot
@@ -703,7 +619,7 @@ def nlti(u_, v_, w_, p_, q_, r_, x_, y_, z_, phi_, theta_, psi_, A_):
 
     return [u_, v_, w_, p_, q_, r_, x_, y_, z_, phi_, theta_, psi_]
 
-
+'direction cosine matrix function'
 def lindcm(A, B):
     phiv = A[0]
     thetav = A[1]
@@ -724,7 +640,7 @@ def lindcm(A, B):
     Xv = np.dot(DCM, np.array(B))
     return Xv
 
-
+'angular cosine matrix function'
 def angdcm(A, B):
     phiv = A[0]
     thetav = A[1]
@@ -736,25 +652,15 @@ def angdcm(A, B):
     W = np.dot(DCM, np.array(B))
     return W
 
+'calculate body force and moment coefficients'
 def coefs(u_, v_, w_, A_):
-    'calculate body force and moment coefficients'
-    XF = A_[0]
-    YF = A_[1]
-    ZF = A_[2]
-    LM = A_[3]
-    MM = A_[4]
-    NM = A_[5]
-
+    XF, YF, ZF = A_[0], A_[1], A_[2]
+    LM, MM, NM = A_[3], A_[4], A_[5]
     q = 0.5*rho*(u_**2+v_**2+w_**2)
-
     CX = XF/q/Sref_w
     CY = YF/q/Sref_w
     CZ = ZF/q/Sref_w
     CL = LM/q/Sref_w/wspan
     CM = MM/q/Sref_w/cbar_w
     CN = NM/q/Sref_w/wspan
-
     return [CX, CY, CZ, CL, CM, CN]
-
-def plotwing():
-    'something goes here'
