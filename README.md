@@ -1,2 +1,2 @@
-# Aerodynamic-Strip-Theory
+# Aerodynamic Strip Theory Flight Sim
 Application of aerodynamic strip theory for aircraft flight simulation. Still quite buggy and in an early stage. Linearized lift coefficients were used, of the form (dCl/da)a, where dCl/da is the lift-curve slope, and a is the angle of attack (alpha). This makes the math a lot easier, but isn't particularly accurate. As implemented, once an airfoil goes past the stall angle, lift drops to zero -- this causes high moments, and results in tumbling, which is highly unstable (blows up very quickly). Hopefully, this can be remedied with the use of full-envelope airfoil data.
