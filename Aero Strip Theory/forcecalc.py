@@ -525,6 +525,7 @@ def forcecalc(power_, u_, v_, w_, p_, q_, r_, aileron_, elevator_, rudder_):
     LM = np.sum(-leftwing*LW_Z-rightwing*RW_Z)+np.sum(-lefthtail*LHT_Z-righthtail*RHT_Z)+np.sum(vtail*VT_Y)
     MM = np.sum((LW_Z+RW_Z)*(x_cg-x_ac_w))+np.sum((LHT_Z+RHT_Z)*(x_cg-x_ac_ht))+np.sum(vtail*VT_X)+np.sum(TOTAL_PITCH)
     NM = np.sum(-rightwing*RW_X-leftwing*LW_X)+np.sum(-righthtail*RHT_X-lefthtail*LHT_X)
+    
     print(XF, YF, ZF, LM, MM, NM)
     return [XF, YF, ZF, LM, MM, NM]
 
@@ -594,10 +595,10 @@ def nlti(u_, v_, w_, p_, q_, r_, x_, y_, z_, phi_, theta_, psi_, A_):
     r_ += 0.5*(rdot+dr_dt)*timestep
     
     'using cosine matrices to convert velocities and accelerations to inertial frame (is there a better way to handle accelerations?)'
-    I_ = lindcm([phi_, theta_, psi_], [du_dt, dv_dt, dw_dt])
-    X_ = lindcm([phi_, theta_, psi_], [u_, v_, w_])
-    J_ = angdcm([phi_, theta_, psi_], [dp_dt, dq_dt, dr_dt])
-    W_ = angdcm([phi_, theta_, psi_], [p_, q_, r_])
+    I_ = lindcm([-phi_, -theta_, -psi_], [du_dt, dv_dt, dw_dt])
+    X_ = lindcm([-phi_, -theta_, -psi_], [u_, v_, w_])
+    J_ = angdcm([-phi_, -theta_, -psi_], [dp_dt, dq_dt, dr_dt])
+    W_ = angdcm([-phi_, -theta_, -psi_], [p_, q_, r_])
     
     'linear displacements in the inertial frame'
     x_ += X_[0]*timestep+0.5*I_[0]*timestep*timestep
@@ -625,31 +626,26 @@ def lindcm(A, B):
     thetav = A[1]
     psiv = A[2]
 
-    roll = np.array([[1, 0, 0],
-                     [0, math.cos(phiv), math.sin(phiv)],
-                     [0, -math.sin(phiv), math.cos(phiv)]])
-    pitch = np.array([[math.cos(thetav), 0, -math.sin(thetav)],
-                      [0, 1, 0],
-                      [math.sin(thetav), 0, math.cos(thetav)]])
-    yaw = np.array([[math.cos(psiv), math.sin(psiv), 0],
-                    [-math.sin(psiv), math.cos(psiv), 0],
-                    [0, 0, 1]])
-
-    temp = np.matmul(roll, pitch)
-    DCM = np.matmul(temp, yaw)
-    Xv = np.dot(DCM, np.array(B))
-    return Xv
+    DCM = np.array([[np.cos(thetav)*np.cos(psiv), np.cos(thetav)*np.sin(psiv), -np.sin(thetav)],
+                    [np.sin(phiv)*np.sin(thetav)*np.cos(psiv)-np.cos(phiv)*np.sin(psiv), 
+                    np.sin(phiv)*np.sin(thetav)*np.sin(psiv)+np.cos(phiv)*np.cos(psiv), 
+                    np.sin(phiv)*np.cos(thetav)],
+                    [np.cos(phiv)*np.sin(thetav)*np.cos(psiv)+np.sin(phiv)*np.sin(psiv),
+                    np.cos(phiv)*np.sin(thetav)*np.sin(psiv)-np.sin(phiv)*np.cos(psiv), 
+                    np.cos(phiv)*np.cos(thetav)]])
+    transform = np.dot(np.transpose(DCM), np.array(B))
+    return transform
 
 'angular cosine matrix function'
 def angdcm(A, B):
     phiv = A[0]
     thetav = A[1]
 
-    DCM = np.array([[1, math.sin(phiv)*math.tan(thetav), math.cos(phiv)*math.tan(thetav)],
-                    [0, math.cos(phiv), -math.sin(phiv)],
-                    [0, math.sin(phiv)/math.cos(thetav), math.cos(phiv)/math.cos(thetav)]])
+    ACM = np.array([[1, np.sin(phiv)*np.tan(thetav), np.cos(phiv)*np.tan(thetav)],
+                    [0, np.cos(phiv), -np.sin(phiv)],
+                    [0, np.sin(phiv)/np.cos(thetav), np.cos(phiv)/np.cos(thetav)]])
 
-    W = np.dot(DCM, np.array(B))
+    W = np.dot(ACM, np.array(B))
     return W
 
 'calculate body force and moment coefficients'
@@ -664,3 +660,19 @@ def coefs(u_, v_, w_, A_):
     CM = MM/q/Sref_w/cbar_w
     CN = NM/q/Sref_w/wspan
     return [CX, CY, CZ, CL, CM, CN]
+
+def plotaircraft(ax):
+    global wspan
+    global htspan
+
+    'generate geometry using sizing'
+    ltedge = np.linspace(-wspan/2, 0, 50)
+    rtedge = np.linspace(0, wspan/2, 50)
+    ltip = np.linspace(0, tc_w,50)
+    rtip = np.linspace(0, tc_w,50)
+    'lledge ='
+    'rledge ='
+
+    'rotate geometry'
+
+    'plot geometry'
